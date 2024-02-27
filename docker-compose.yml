@@ -1,0 +1,57 @@
+version: '3.9'
+
+services:
+  backend:
+    container_name: compose-backend-container
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    image: compose-backend-optimal-image
+    networks:
+      - backend
+    ports:
+      - 4000:3000
+    env_file:
+      - backend/.env
+    depends_on:
+      - database
+
+  frontend:
+    container_name: compose-frontend-container
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    image: compose-frontend-optimal-image
+    networks:
+      - frontend
+    ports:
+      - 8081:80
+
+  database:
+    container_name: postgres
+    image: postgres
+    networks:
+      - backend
+    volumes:
+      - postgres_data:/data/postgres
+    env_file:
+      - backend/.env
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    networks:
+      - backend
+    ports:
+      - 8080:8080
+    depends_on:
+      - database
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  postgres_data:
+
+

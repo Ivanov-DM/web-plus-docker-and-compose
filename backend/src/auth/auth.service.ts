@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { verifyHash } from '../../helpers/hash';
@@ -12,15 +12,21 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
-    const user = await this.usersService.findOne({
-      select: { username: true, password: true, id: true },
-      where: { username },
-    });
-    if (user && (await verifyHash(password, user.password))) {
-      const { password, ...result } = user;
-      return result;
+    try {
+      const user = await this.usersService.findOne({
+        select: {username: true, password: true, id: true},
+        where: {username},
+      });
+      if (user && (await verifyHash(password, user.password))) {
+        const {password, ...result} = user;
+        return result;
+      }
+      return null;
+    } catch (err) {
+      throw new BadRequestException({
+        message: 'Пользователя с таким именем не существует',
+      });
     }
-    return null;
   }
 
   async login(user: User) {
